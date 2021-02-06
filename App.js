@@ -5,126 +5,70 @@
  * @format
  * @flow strict-local
  */
-
+import 'react-native-gesture-handler';
 import React, {createRef} from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  StatusBar,
-  Animated,
-} from 'react-native';
+import {StyleSheet, View, Text, StatusBar, Animated} from 'react-native';
 
-import {
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-  Header,
-} from 'react-native/Libraries/NewAppScreen';
-import StickyHeader from './src/Components/StickyHeader';
 import List from './src/Components/List';
 import NavBar from './src/Components/Navbar';
+import CollapsibleHeader from './src/Components/CollapsibleHeader';
+import {NavigationContainer} from '@react-navigation/native';
 
 class App extends React.Component {
   scrollY = new Animated.Value(0);
-  first = createRef(null);
-  second = createRef(null);
+  header = createRef(null);
+
   state = {
-    headerLayoutYs: {},
+    headerHeight: 0,
+    stickyHeaderHeight: 0,
   };
 
-  onStickyHeaderLayout = (layoutY, key) => {
-    this.setState(({headerLayoutYs}) => ({
-      headerLayoutYs: {
-        ...headerLayoutYs,
-        [key]: layoutY,
-      },
-    }));
+  onHeaderLayout = (headerHeight) => {
+    this.setState({
+      headerHeight,
+    });
+  };
 
-    if (key !== 0) {
-      this.first.current.setNextHeaderLayoutY(layoutY);
-    }
+  onStickyHeaderLayout = (stickyHeaderHeight) => {
+    this.setState({
+      stickyHeaderHeight,
+    });
+    this.header?.current?.setStickyHeight(stickyHeaderHeight);
   };
 
   render() {
-    const {headerLayoutYs} = this.state;
+    const {stickyHeaderHeight} = this.state;
     return (
-      <>
-        <StatusBar barStyle="dark-content" />
-        <SafeAreaView>
+      <NavigationContainer>
+        <View style={{flex: 1}}>
           <Animated.ScrollView
-            contentInsetAdjustmentBehavior="automatic"
-            style={styles.scrollView}
+            contentContainerStyle={{paddingTop: this.state.headerHeight}}
             onScroll={Animated.event(
               [{nativeEvent: {contentOffset: {y: this.scrollY}}}],
               {useNativeDriver: true},
             )}>
-            <StickyHeader
-              ref={this.first}
-              nextHeaderLayoutY={headerLayoutYs[1]}
-              onLayout={(y) => this.onStickyHeaderLayout(y, 0)}
-              scrollAnimationValue={this.scrollY}
-              backgroundColor={'black'}>
-              <Text style={styles.sectionTitle}>WhatsApp</Text>
-            </StickyHeader>
-            <StickyHeader
-              ref={this.second}
-              nextHeaderLayoutY={null}
-              onLayout={(y) => this.onStickyHeaderLayout(y, 1)}
-              scrollAnimationValue={this.scrollY}
-              backgroundColor={'black'}>
-              <NavBar />
-            </StickyHeader>
-            <View style={styles.body}>
-              <List />
-            </View>
+            <List />
           </Animated.ScrollView>
-        </SafeAreaView>
-      </>
+          <CollapsibleHeader
+            ref={this.header}
+            onLayout={this.onHeaderLayout}
+            scrollY={this.scrollY}
+            stickyHeaderHeight={stickyHeaderHeight}>
+            <Text style={styles.sectionTitle}>WhatsApp</Text>
+            <NavBar onLayout={this.onStickyHeaderLayout} />
+          </CollapsibleHeader>
+        </View>
+      </NavigationContainer>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
-  },
-  engine: {
-    position: 'absolute',
-    right: 0,
-  },
-  body: {
-    backgroundColor: Colors.white,
-  },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
   sectionTitle: {
     fontSize: 24,
     fontWeight: '600',
     color: 'white',
     margin: 20,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
   },
 });
 

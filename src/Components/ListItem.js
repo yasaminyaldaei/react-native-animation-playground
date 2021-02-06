@@ -15,10 +15,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   image: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    resizeMode: 'contain',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    resizeMode: 'cover',
+    marginHorizontal: 20,
+    marginVertical: 10,
   },
 });
 export default ListItem;

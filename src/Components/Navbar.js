@@ -3,10 +3,17 @@ import {View, Text, StyleSheet} from 'react-native';
 
 const TABS = ['Chats'];
 
-const NavBar = () => {
+const NavBar = ({onLayout}) => {
   const [selected, setSelected] = useState(0);
+  const onViewLayout = ({
+    nativeEvent: {
+      layout: {height},
+    },
+  }) => {
+    onLayout && onLayout(height);
+  };
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onLayout={onViewLayout}>
       {TABS.map((tab, index) => (
         <View key={'' + index}>
           <Text
@@ -26,6 +33,7 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: 20,
     alignItems: 'baseline',
+    backgroundColor: 'black',
   },
   tab: {
     fontSize: 14,
