@@ -1,12 +1,22 @@
 import React from 'react';
-import {View, StyleSheet, Image, Text} from 'react-native';
+import {StyleSheet, Image, Text, TouchableOpacity} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 
-const ListItem = ({avatar, name}) => (
-  <View style={styles.container}>
-    <Image source={{uri: avatar}} style={styles.image} />
-    <Text>{name}</Text>
-  </View>
-);
+const ListItem = ({avatar, name, id}) => {
+  const navigation = useNavigation();
+  return (
+    <TouchableOpacity
+      style={styles.container}
+      onPress={() =>
+        navigation.navigate('Details', {
+          id,
+        })
+      }>
+      <Image source={{uri: avatar}} style={styles.image} />
+      <Text>{name}</Text>
+    </TouchableOpacity>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
