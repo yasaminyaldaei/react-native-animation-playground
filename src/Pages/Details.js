@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {StyleSheet, Animated} from 'react-native';
+import {Animated, View} from 'react-native';
 import DetailsSection from '../Components/DetailsSection';
 import CollapsibleImageHeader from '../Components/CollapsibleImageHeader';
 import DetailsNavbar from '../Components/DetailsNavbar';
@@ -26,18 +26,22 @@ class Details extends Component {
       )
       .catch(console.error);
   }
+
   onPressBack = () => this.props.navigation.navigate('Home');
+
   onHeaderLayout = (headerHeight) => {
     this.setState({
       headerHeight,
     });
   };
+
   onStickyHeaderLayout = (stickyHeaderHeight) => {
     this.setState({
       stickyHeaderHeight,
     });
     this.collapsibleHeader?.current?.onStickyHeaderLayout(stickyHeaderHeight);
   };
+
   render() {
     const {details, headerHeight, stickyHeaderHeight} = this.state;
     return (

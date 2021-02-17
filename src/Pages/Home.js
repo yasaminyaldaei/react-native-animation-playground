@@ -14,6 +14,19 @@ class Home extends Component {
     contacts: [],
   };
 
+  componentDidMount() {
+    fetch('https://6005c08875860e0017c5d096.mockapi.io/contacts/', {
+      method: 'GET',
+    })
+      .then((data) => data.json())
+      .then((data) =>
+        this.setState({
+          contacts: data,
+        }),
+      )
+      .catch(console.error);
+  }
+
   onHeaderLayout = (headerHeight) => {
     this.setState({
       headerHeight,
@@ -27,18 +40,6 @@ class Home extends Component {
     this.header?.current?.setStickyHeight(stickyHeaderHeight);
   };
 
-  componentDidMount() {
-    fetch('https://6005c08875860e0017c5d096.mockapi.io/contacts/', {
-      method: 'GET',
-    })
-      .then((data) => data.json())
-      .then((data) =>
-        this.setState({
-          contacts: data,
-        }),
-      )
-      .catch(console.error);
-  }
   render() {
     const {stickyHeaderHeight, contacts} = this.state;
     return (
