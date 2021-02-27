@@ -8,9 +8,11 @@ const ListItem = ({avatar, name, id}) => {
     <TouchableOpacity
       style={styles.container}
       onPress={() =>
-        navigation.navigate('Details', {
-          id,
-        })
+        id
+          ? navigation.navigate('Details', {
+              id,
+            })
+          : null
       }>
       <Image source={{uri: avatar}} style={styles.image} />
       <Text>{name}</Text>

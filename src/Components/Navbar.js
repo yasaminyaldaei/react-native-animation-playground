@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {View, Text, StyleSheet, FlatList} from 'react-native';
+import React from 'react';
+import {View, Text, StyleSheet, FlatList, TouchableOpacity} from 'react-native';
 
 const TABS = [
   {
@@ -16,34 +16,56 @@ const TABS = [
   },
 ];
 
-const NavBar = ({onLayout}) => {
-  const [selected, setSelected] = useState(0);
-  const onViewLayout = ({
+class NavBar extends React.Component {
+  state = {
+    selected: 0,
+  };
+
+  onViewLayout = ({
     nativeEvent: {
       layout: {height},
     },
   }) => {
+    const {onLayout} = this.props;
     onLayout && onLayout(height);
   };
-  return (
-    <View style={styles.container} onLayout={onViewLayout}>
-      <FlatList
-        horizontal
-        data={TABS}
-        keyExtractor={(item) => '' + item.key}
-        renderItem={({item, index}) => (
-          <Text
-            style={[
-              styles.tab,
-              selected === index ? styles.selectedTab : null,
-            ]}>
-            {item.title}
-          </Text>
-        )}
-      />
-    </View>
-  );
-};
+
+  onTabChange = (selected) => {
+    this.setState(
+      {
+        selected,
+      },
+      () => {
+        const {onChange} = this.props;
+        onChange && onChange(this.state.selected);
+      },
+    );
+  };
+
+  render() {
+    const {selected} = this.state;
+    return (
+      <View style={styles.container} onLayout={this.onViewLayout}>
+        <FlatList
+          horizontal
+          data={TABS}
+          keyExtractor={(item) => '' + item.key}
+          renderItem={({item, index}) => (
+            <TouchableOpacity onPress={() => this.onTabChange(index)}>
+              <Text
+                style={[
+                  styles.tab,
+                  selected === index ? styles.selectedTab : null,
+                ]}>
+                {item.title}
+              </Text>
+            </TouchableOpacity>
+          )}
+        />
+      </View>
+    );
+  }
+}
 
 const styles = StyleSheet.create({
   container: {

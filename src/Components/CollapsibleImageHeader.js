@@ -33,24 +33,35 @@ class CollapsibleImageHeader extends React.Component {
   };
 
   render() {
-    const {avatar, scrollY} = this.props;
+    const {
+      avatar,
+      scrollY,
+      onTabChange,
+      previousScrollY,
+      direction,
+    } = this.props;
     const {layoutHeight, stickyHeight, navbarHeight} = this.state;
+    const stickyHeaderHeight = layoutHeight - stickyHeight - navbarHeight;
+    const interpolateValue = Animated.add(
+      previousScrollY,
+      Animated.multiply(scrollY, direction || 1),
+    );
     const opacity = layoutHeight
-      ? scrollY.interpolate({
-          inputRange: [0, layoutHeight],
+      ? interpolateValue.interpolate({
+          inputRange: [0, stickyHeaderHeight],
           outputRange: [1, 0],
         })
       : 0;
     const translateY = layoutHeight
-      ? scrollY.interpolate({
-          inputRange: [0, layoutHeight - stickyHeight - navbarHeight],
-          outputRange: [0, -(layoutHeight - stickyHeight - navbarHeight)],
+      ? interpolateValue.interpolate({
+          inputRange: [0, stickyHeaderHeight],
+          outputRange: [0, -stickyHeaderHeight],
           extrapolate: 'clamp',
         })
       : 0;
     const separatorOpacity = layoutHeight
-      ? scrollY.interpolate({
-          inputRange: [0, layoutHeight],
+      ? interpolateValue.interpolate({
+          inputRange: [0, stickyHeaderHeight],
           outputRange: [0, 0.3],
           extrapolate: 'clamp',
         })
@@ -64,12 +75,9 @@ class CollapsibleImageHeader extends React.Component {
           style={[styles.image, {opacity}]}
         />
         <Animated.View
-          style={[
-            {height: 1, flex: 1, backgroundColor: 'dimgray'},
-            {opacity: separatorOpacity},
-          ]}
+          style={[styles.separator, {opacity: separatorOpacity}]}
         />
-        <Navbar onLayout={this.onNavbarLayout} />
+        <Navbar onLayout={this.onNavbarLayout} onChange={onTabChange} />
       </Animated.View>
     );
   }
@@ -86,6 +94,11 @@ const styles = StyleSheet.create({
   },
   image: {
     height: 300,
+  },
+  separator: {
+    height: 1,
+    flex: 1,
+    backgroundColor: 'dimgray',
   },
 });
 
