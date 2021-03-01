@@ -13,7 +13,7 @@ const width = Dimensions.get('screen').width;
 
 class TabContent extends React.Component {
   list = React.createRef(null);
-  scrollY = new Animated.Value(0);
+  scrollY = React.createRef(0);
   state = {
     sectionDetails: {},
   };
@@ -45,11 +45,7 @@ class TabContent extends React.Component {
       <ScrollContext.Consumer>
         {({scrollY}) => (
           <View style={[{width}]}>
-            <Animated.FlatList
-              onScroll={Animated.event(
-                [{nativeEvent: {contentOffset: {y: scrollY}}}],
-                {useNativeDriver: true},
-              )}
+            <FlatList
               ref={this.list}
               data={sectionDetails}
               keyExtractor={(item) => item.id}

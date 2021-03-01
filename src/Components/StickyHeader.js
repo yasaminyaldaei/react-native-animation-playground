@@ -1,5 +1,5 @@
 import React from 'react';
-import {Animated} from 'react-native';
+import {Animated, StyleSheet} from 'react-native';
 
 class StickyHeader extends React.Component {
   translateY = new Animated.Value(0);
@@ -21,16 +21,18 @@ class StickyHeader extends React.Component {
       layout: {y, height},
     },
   }) => {
+    const {onLayout} = this.props;
     this.setState({
       measured: true,
       layoutY: y,
       layoutHeight: height,
     });
-    this.props.onLayout(y);
+    onLayout && onLayout(y);
   };
 
   render() {
     const {measured, layoutHeight, layoutY, nextHeaderLayoutY} = this.state;
+    const {height, backgroundColor, scrollY} = this.props;
     const inputRange = [-1, 0];
     const outputRange = [0, 0];
 
@@ -46,7 +48,7 @@ class StickyHeader extends React.Component {
         outputRange.push(1);
       }
     }
-    this.translateY = this.props.scrollAnimationValue.interpolate({
+    this.translateY = scrollY.interpolate({
       inputRange,
       outputRange,
     });
@@ -54,16 +56,24 @@ class StickyHeader extends React.Component {
     return (
       <Animated.View
         onLayout={this.onLayout}
-        style={{
-          height: this.props.height,
-          backgroundColor: this.props.backgroundColor,
-          zIndex: 10,
-          transform: [{translateY: this.translateY}],
-        }}>
+        style={[
+          styles.container,
+          {
+            height: height,
+            backgroundColor: backgroundColor,
+            transform: [{translateY: this.translateY}],
+          },
+        ]}>
         {this.props.children}
       </Animated.View>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    zIndex: 10,
+  },
+});
 
 export default StickyHeader;

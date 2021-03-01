@@ -2,7 +2,7 @@ import React, {createRef, Component} from 'react';
 import {Animated, Text, StyleSheet} from 'react-native';
 import ListItem from '../Components/ListItem';
 import CollapsibleHeader from '../Components/CollapsibleHeader';
-import Navbar from '../Components/Navbar';
+import TabBar from '../Components/TabBar';
 
 class Home extends Component {
   scrollY = new Animated.Value(0);
@@ -62,7 +62,7 @@ class Home extends Component {
           scrollY={this.scrollY}
           stickyHeaderHeight={stickyHeaderHeight}>
           <Text style={styles.sectionTitle}>WhatsApp</Text>
-          <Navbar onLayout={this.onStickyHeaderLayout} />
+          <TabBar onLayout={this.onStickyHeaderLayout} />
         </CollapsibleHeader>
       </>
     );

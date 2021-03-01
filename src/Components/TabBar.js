@@ -16,18 +16,18 @@ const TABS = [
   },
 ];
 
-class NavBar extends React.Component {
+class TabBar extends React.Component {
   state = {
     selected: 0,
   };
 
   onViewLayout = ({
     nativeEvent: {
-      layout: {height},
+      layout: {height, y},
     },
   }) => {
     const {onLayout} = this.props;
-    onLayout && onLayout(height);
+    onLayout && onLayout(height, y);
   };
 
   onTabChange = (selected) => {
@@ -69,7 +69,7 @@ class NavBar extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 20,
+    paddingHorizontal: 20,
     alignItems: 'baseline',
     backgroundColor: 'black',
   },
@@ -85,4 +85,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default NavBar;
+export default TabBar;

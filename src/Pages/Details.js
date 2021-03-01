@@ -1,23 +1,28 @@
 import React, {Component, createRef} from 'react';
-import {Animated, View, FlatList, ScrollView} from 'react-native';
+import {Animated, FlatList} from 'react-native';
 import CollapsibleImageHeader from '../Components/CollapsibleImageHeader';
-import DetailsNavbar from '../Components/DetailsNavbar';
 import TabContent from '../Components/TabContent';
 import ScrollContext from '../ScrollContext';
+import TabBar from '../Components/TabBar';
+import StickyHeader from '../Components/StickyHeader';
 
 class Details extends Component {
+  scrollView = createRef(null);
   scrollY = new Animated.Value(0);
+  scrollYRef = createRef(0);
   previousScrollY = createRef(0);
-  previousY = new Animated.Value(0);
-  direction = createRef(0);
   collapsibleHeader = React.createRef(null);
   list = React.createRef(null);
+  stickyHeader = React.createRef(null);
+
+  tabsScrollValues = new Map();
   state = {
     details: {},
     headerHeight: 0,
     stickyHeaderHeight: 0,
     tabs: {},
     selectedTab: 0,
+    navbarHeight: 0,
   };
   componentDidMount() {
     const {route} = this.props;
@@ -38,14 +43,20 @@ class Details extends Component {
     })
       .then((data) => data.json())
       .then((data) =>
-        this.setState({
-          tabs: data,
-        }),
+        this.setState(
+          {
+            tabs: data,
+          },
+          () => {
+            this.state.tabs.map((tab, index) =>
+              this.tabsScrollValues.set(index, 0),
+            );
+          },
+        ),
       )
       .catch(console.error);
 
     this.scrollY.addListener(this.setScrollY);
-    this.previousY.addListener(({value}) => console.log(value));
   }
 
   onPressBack = () => this.props.navigation.navigate('Home');
@@ -63,7 +74,43 @@ class Details extends Component {
     this.collapsibleHeader?.current?.onStickyHeaderLayout(stickyHeaderHeight);
   };
 
+  onNavbarLayout = (height, y) => {
+    this.setState({
+      navbarHeight: height,
+    });
+  };
+
+  onTabBarLayout = (height, y) => {
+    this.setState({
+      tabBarHeight: height,
+      tabBarY: y,
+    });
+
+    // this.stickyHeader.current.setNextHeaderLayoutY(y);
+  };
+
+  getNextTabScrollY = (nextIndex) => {
+    const {headerHeight} = this.state;
+    const currentScrollY = this.scrollYRef.current;
+    const nextTabInitialScrollY = this.tabsScrollValues.get(nextIndex);
+    if (currentScrollY <= headerHeight) {
+      return currentScrollY;
+    } else {
+      if (nextTabInitialScrollY <= headerHeight) {
+        return headerHeight;
+      } else {
+        return nextTabInitialScrollY;
+      }
+    }
+  };
+
   onChangeTab = (selectedTab) => {
+    this.tabsScrollValues.set(this.state.selectedTab, this.scrollYRef.current);
+    this.scrollView.current.scrollTo({
+      x: 0,
+      y: this.getNextTabScrollY(selectedTab),
+      animated: true,
+    });
     this.setState(
       {
         selectedTab,
@@ -73,14 +120,12 @@ class Details extends Component {
           animated: true,
           index: this.state.selectedTab,
         });
-        this.previousY.setValue(this.previousScrollY.current);
       },
     );
   };
 
   setScrollY = ({value}) => {
-    this.direction.current = value - this.previousScrollY.current > 0 ? 1 : -1;
-    this.previousScrollY.current = value;
+    this.scrollYRef.current = value;
   };
 
   scrollContextValue = {
@@ -95,41 +140,47 @@ class Details extends Component {
       stickyHeaderHeight,
       tabs,
       selectedTab,
+      navbarHeight,
     } = this.state;
     return (
       <ScrollContext.Provider value={this.scrollContextValue}>
-        <DetailsNavbar
-          onPress={this.onPressBack}
-          scrollY={this.scrollY}
-          onLayout={this.onStickyHeaderLayout}
-        />
-        <CollapsibleImageHeader
-          ref={this.collapsibleHeader}
-          avatar={details.avatar}
-          onLayout={this.onHeaderLayout}
-          scrollY={this.scrollY}
-          previousScrollY={this.previousY}
-          stickyHeaderHeight={stickyHeaderHeight}
-          direction={this.direction.current}
-          onTabChange={this.onChangeTab}
-        />
-        {tabs && tabs.length !== 0 ? (
-          <FlatList
-            ref={this.list}
-            data={tabs}
-            keyExtractor={(item) => '' + item.id}
-            horizontal
-            nestedScrollEnabled
-            renderItem={({item, index}) => (
-              <TabContent
-                id={item.id}
-                active={index === selectedTab}
-                headerHeight={headerHeight}
-                previousScrollY={this.previousY}
-              />
-            )}
+        <Animated.ScrollView
+          onScroll={Animated.event(
+            [{nativeEvent: {contentOffset: {y: this.scrollY}}}],
+            {useNativeDriver: true},
+          )}
+          stickyHeaderIndices={[0, 1]}
+          ref={this.scrollView}
+          showsVerticalScrollIndicator={false}>
+          <CollapsibleImageHeader
+            ref={this.collapsibleHeader}
+            avatar={details.avatar}
+            onViewLayout={this.onHeaderLayout}
+            scrollY={this.scrollY}
+            previousScrollY={this.previousY}
+            stickyHeaderHeight={stickyHeaderHeight}
+            onPressBack={this.onPressBack}
+            onNavbarLayout={this.onStickyHeaderLayout}
           />
-        ) : null}
+          <TabBar onChange={this.onChangeTab} onLayout={this.onTabBarLayout} />
+          {tabs && tabs.length !== 0 ? (
+            <FlatList
+              ref={this.list}
+              data={tabs}
+              keyExtractor={(item) => '' + item.id}
+              horizontal
+              nestedScrollEnabled
+              renderItem={({item, index}) => (
+                <TabContent
+                  id={item.id}
+                  active={index === selectedTab}
+                  headerHeight={headerHeight}
+                  previousScrollY={this.previousScrollY}
+                />
+              )}
+            />
+          ) : null}
+        </Animated.ScrollView>
       </ScrollContext.Provider>
     );
   }
