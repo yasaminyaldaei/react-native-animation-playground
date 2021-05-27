@@ -3,11 +3,26 @@ import {Animated, StyleSheet} from 'react-native';
 
 class CollapsibleHeader extends React.Component {
   state = {
-    layoutY: 0,
     layoutHeight: 0,
     clampedScroll: 0,
     stickyHeight: this.props.stickyHeaderHeight,
   };
+
+  componentDidUpdate() {
+    const {scrollY, stickyHeaderHeight} = this.props;
+    const {layoutHeight, clampedScroll} = this.state;
+
+    if (stickyHeaderHeight && layoutHeight && !clampedScroll) {
+      this.setState({
+        clampedScroll: Animated.diffClamp(
+          scrollY,
+          0,
+          layoutHeight - stickyHeaderHeight,
+        ),
+      });
+    }
+  }
+
   setStickyHeight = (stickyHeight) => {
     this.setState({
       stickyHeight,
@@ -15,26 +30,21 @@ class CollapsibleHeader extends React.Component {
   };
   onLayout = ({
     nativeEvent: {
-      layout: {y, height},
+      layout: {height},
     },
   }) => {
     this.setState({
-      layoutY: y,
       layoutHeight: height,
-      clampedScroll: Animated.diffClamp(this.props.scrollY, 0, height),
     });
 
     this.props.onLayout && this.props.onLayout(height);
   };
   render() {
     const {clampedScroll, layoutHeight, stickyHeight} = this.state;
-    const translateY = clampedScroll
-      ? clampedScroll.interpolate({
-          inputRange: [0, layoutHeight - stickyHeight],
-          outputRange: [0, -(layoutHeight - stickyHeight)],
-          extrapolate: 'clamp',
-        })
-      : 0;
+    const translateY =
+      clampedScroll && layoutHeight && stickyHeight
+        ? Animated.multiply(clampedScroll, -1)
+        : 0;
     return (
       <Animated.View
         style={[styles.container, {transform: [{translateY}]}]}

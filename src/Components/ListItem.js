@@ -1,6 +1,13 @@
 import React from 'react';
-import {StyleSheet, Image, Text, TouchableOpacity} from 'react-native';
+import {
+  StyleSheet,
+  Image,
+  Text,
+  TouchableOpacity,
+  ImageBackground,
+} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import PROFILE_PLACEHOLDER from '../Assets/profile.png';
 
 const ListItem = ({avatar, name, id}) => {
   const navigation = useNavigation();
@@ -14,7 +21,12 @@ const ListItem = ({avatar, name, id}) => {
             })
           : null
       }>
-      <Image source={{uri: avatar}} style={styles.image} />
+      <ImageBackground
+        source={PROFILE_PLACEHOLDER}
+        style={{}}
+        imageStyle={styles.image}>
+        <Image source={{uri: avatar}} style={styles.image} />
+      </ImageBackground>
       <Text>{name}</Text>
     </TouchableOpacity>
   );
